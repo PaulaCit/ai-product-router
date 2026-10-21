@@ -1,0 +1,1020 @@
+
+<title>Etapa 1 — Modelagem BD & Taxonomia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fraunces:opsz,wght@9..144,300;9..144,700&display=swap">
+
+<style>
+/* ── Layout: sidebar-nav + scrollable main, full-bleed section bands ── */
+:root {
+  --bg:          #F7F6F2;
+  --surface:     #FFFFFF;
+  --border:      #E0DDD6;
+  --text:        #1A1917;
+  --muted:       #6B6760;
+  --accent:      #1D5FA8;
+  --accent-soft: #EAF1FA;
+  --warn:        #9B4A1B;
+  --code-bg:     #F0EFE9;
+  --code-border: #D6D3CA;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:          #131210;
+    --surface:     #1E1C19;
+    --border:      #2E2C28;
+    --text:        #EAE8E3;
+    --muted:       #8A8780;
+    --accent:      #5B9FE0;
+    --accent-soft: #162035;
+    --warn:        #D4855A;
+    --code-bg:     #181714;
+    --code-border: #2E2C28;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:          #131210;
+  --surface:     #1E1C19;
+  --border:      #2E2C28;
+  --text:        #EAE8E3;
+  --muted:       #8A8780;
+  --accent:      #5B9FE0;
+  --accent-soft: #162035;
+  --warn:        #D4855A;
+  --code-bg:     #181714;
+  --code-border: #2E2C28;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+/* ── Top bar ── */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(24px, env(safe-area-inset-left, 0px));
+  height: 52px;
+  gap: 16px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--surface);
+  z-index: 21;
+}
+.topbar-brand {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.topbar-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.topbar-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 7px;
+}
+
+/* ── Shell: sidebar + content ── */
+.shell {
+  display: flex;
+  min-height: calc(100vh - 52px);
+  align-items: flex-start;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(52px + env(safe-area-inset-top, 0px));
+  max-height: calc(100vh - 52px - env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+  padding: 28px 0 28px 0;
+  border-right: 1px solid var(--border);
+}
+.sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+.nav-section {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 18px 20px 6px;
+}
+.nav-link {
+  display: block;
+  padding: 6px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.nav-link:hover { color: var(--text); background: var(--code-bg); }
+.nav-link.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+
+/* ── Main content ── */
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 48px 40px 80px;
+  max-width: 860px;
+}
+
+/* ── Section ── */
+.section { margin-bottom: 64px; }
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.section p { color: var(--muted); max-width: 65ch; margin-bottom: 12px; }
+.section p strong { color: var(--text); font-weight: 600; }
+
+/* ── Code blocks ── */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--code-border);
+  background: var(--surface);
+}
+.code-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: .04em;
+}
+.code-lang {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.code-block pre {
+  margin: 0;
+  padding: 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text);
+}
+
+/* Syntax coloring */
+.kw  { color: var(--accent); font-weight: 600; }
+.ty  { color: #2A8A6A; }
+.cm  { color: var(--muted); font-style: italic; }
+.st  { color: var(--warn); }
+.nm  { color: var(--text); }
+
+/* ── Tree ── */
+.tree {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.8;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 6px;
+  padding: 16px 20px;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+.tree .dir { color: var(--accent); font-weight: 600; }
+.tree .file { color: var(--text); }
+.tree .note { color: var(--muted); font-style: italic; }
+
+/* ── Info boxes ── */
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.callout strong { color: var(--accent); }
+
+.warn-box {
+  border-left: 3px solid var(--warn);
+  background: color-mix(in srgb, var(--warn) 8%, var(--bg));
+  border-radius: 0 6px 6px 0;
+  padding: 12px 16px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--text);
+}
+.warn-box strong { color: var(--warn); }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; margin: 20px 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+thead tr { border-bottom: 2px solid var(--border); }
+thead th {
+  text-align: left;
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:last-child { border-bottom: none; }
+tbody td { padding: 8px 12px; color: var(--text); vertical-align: top; }
+tbody td code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 3px;
+  padding: 1px 5px;
+}
+
+/* ── Divider ── */
+.divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .sidebar { display: none; }
+  .content { padding: 32px 20px 60px; }
+  .topbar { padding: 0 20px; }
+  .section-title { font-size: 21px; }
+}
+</style>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="topbar-brand">E-Commerce Platform — Etapa 1</span>
+  <span class="topbar-meta">Modelagem BD &amp; Taxonomia</span>
+  <span class="topbar-badge">PostgreSQL 16</span>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR NAV -->
+  <aside class="sidebar">
+    <nav>
+      <span class="nav-section">Estrutura</span>
+      <a class="nav-link active" href="#repo">Árvore do Repositório</a>
+      <a class="nav-link" href="#docker">Docker / Infra</a>
+
+      <span class="nav-section">SQL</span>
+      <a class="nav-link" href="#ddl-categories">DDL — Categorias</a>
+      <a class="nav-link" href="#ddl-products">DDL — Produtos</a>
+      <a class="nav-link" href="#seed">DML — Seed Data</a>
+      <a class="nav-link" href="#query">Query Recursiva</a>
+
+      <span class="nav-section">Guia</span>
+      <a class="nav-link" href="#logica">Lógica de Negócio</a>
+      <a class="nav-link" href="#fluxos">Fluxos de Integração</a>
+      <a class="nav-link" href="#como-rodar">Como Rodar</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="content">
+
+    <!-- ── 1. ÁRVORE DO REPOSITÓRIO ── -->
+    <section class="section" id="repo">
+      <div class="section-eyebrow">Artefato 1</div>
+      <h1 class="section-title">Árvore do Repositório</h1>
+      <p>Organização monorepo segmentada por responsabilidade. As <code>migrations</code> são numeradas e idempotentes; os <code>seeds</code> são isolados por ambiente. A pasta <code>infra/</code> contém exclusivamente configurações de orquestração de contêiner.</p>
+
+      <div class="tree">
+<span class="dir">ecommerce-platform/</span>
+├── <span class="dir">infra/</span>
+│   ├── <span class="file">docker-compose.yml</span>           <span class="note"># orquestração local (Postgres + pgAdmin)</span>
+│   ├── <span class="file">docker-compose.prod.yml</span>       <span class="note"># override para produção</span>
+│   └── <span class="dir">postgres/</span>
+│       └── <span class="file">postgresql.conf</span>             <span class="note"># tuning: work_mem, wal_level etc.</span>
+│
+├── <span class="dir">db/</span>
+│   ├── <span class="dir">migrations/</span>
+│   │   ├── <span class="file">V001__create_categories.sql</span>   <span class="note"># DDL: tabela categories (Adjacency List)</span>
+│   │   ├── <span class="file">V002__create_products.sql</span>     <span class="note"># DDL: tabela products + chave estrangeira</span>
+│   │   └── <span class="file">V003__create_pivot_table.sql</span>  <span class="note"># DDL: product_secondary_categories (N:N)</span>
+│   │
+│   └── <span class="dir">seeds/</span>
+│       ├── <span class="file">S001__categories_tree.sql</span>     <span class="note"># árvore 4-níveis: Casa/Jardim + Automotivo</span>
+│       └── <span class="file">S002__sample_products.sql</span>     <span class="note"># produto "Lavadora de Alta Pressão"</span>
+│
+├── <span class="dir">api/</span>
+│   ├── <span class="dir">routes/</span>
+│   │   ├── <span class="file">categories.js</span>               <span class="note"># GET /categories (árvore paginada)</span>
+│   │   └── <span class="file">products.js</span>                 <span class="note"># GET /products/:id/breadcrumbs</span>
+│   ├── <span class="dir">services/</span>
+│   │   ├── <span class="file">categoryService.js</span>
+│   │   └── <span class="file">productService.js</span>
+│   └── <span class="dir">integrations/</span>
+│       └── <span class="file">jitterbitAdapter.js</span>         <span class="note"># mapeamento de payload batch → INSERT</span>
+│
+├── <span class="dir">docs/</span>
+│   ├── <span class="file">README.md</span>                       <span class="note"># este documento</span>
+│   ├── <span class="file">ARCHITECTURE.md</span>               <span class="note"># decisões de design (ADR)</span>
+│   └── <span class="file">TAXONOMY.md</span>                   <span class="note"># regras de negócio de categorização</span>
+│
+└── <span class="file">.env.example</span>                       <span class="note"># POSTGRES_USER, POSTGRES_DB, POSTGRES_PASSWORD</span>
+      </div>
+
+      <div class="callout">
+        <strong>Convenção de migrations:</strong> prefixo <code>V&lt;NNN&gt;</code> é compatível com Flyway e Liquibase. Execute sempre em ordem numérica. Nunca edite uma migration já aplicada — crie uma nova.
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 2. DOCKER ── -->
+    <section class="section" id="docker">
+      <div class="section-eyebrow">Artefato 2</div>
+      <h2 class="section-title">Infraestrutura Docker</h2>
+      <p>PostgreSQL 16 com volume nomeado para persistência entre reinicializações. O pgAdmin é incluído apenas no perfil <code>tools</code> para não impactar o tempo de startup no CI.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">infra/docker-compose.yml</span>
+          <span class="code-lang">YAML</span>
+        </div>
+        <pre><span class="cm"># docker-compose.yml — ambiente local de desenvolvimento</span>
+<span class="nm">version</span>: <span class="st">"3.9"</span>
+
+<span class="nm">services</span>:
+
+  <span class="nm">postgres</span>:
+    <span class="nm">image</span>: <span class="st">postgres:16-alpine</span>
+    <span class="nm">container_name</span>: <span class="st">ecommerce_postgres</span>
+    <span class="nm">restart</span>: <span class="st">unless-stopped</span>
+    <span class="nm">environment</span>:
+      POSTGRES_USER:     <span class="st">${POSTGRES_USER:-ecommerce}</span>
+      POSTGRES_PASSWORD: <span class="st">${POSTGRES_PASSWORD:-secret}</span>
+      POSTGRES_DB:       <span class="st">${POSTGRES_DB:-ecommerce_db}</span>
+      <span class="cm"># Locale PT-BR para ordenação correta de acentos</span>
+      POSTGRES_INITDB_ARGS: <span class="st">"--locale=pt_BR.UTF-8 --encoding=UTF8"</span>
+    <span class="nm">ports</span>:
+      - <span class="st">"5432:5432"</span>
+    <span class="nm">volumes</span>:
+      <span class="cm"># Persistência de dados entre reinicializações</span>
+      - <span class="st">postgres_data:/var/lib/postgresql/data</span>
+      <span class="cm"># Scripts de inicialização executados na 1ª criação do volume</span>
+      - <span class="st">../db/migrations:/docker-entrypoint-initdb.d/migrations:ro</span>
+    <span class="nm">healthcheck</span>:
+      <span class="nm">test</span>: [<span class="st">"CMD-SHELL"</span>, <span class="st">"pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"</span>]
+      <span class="nm">interval</span>: <span class="st">10s</span>
+      <span class="nm">timeout</span>:  <span class="st">5s</span>
+      <span class="nm">retries</span>:  <span class="st">5</span>
+
+  <span class="cm"># Interface visual — só sobe com: docker compose --profile tools up</span>
+  <span class="nm">pgadmin</span>:
+    <span class="nm">image</span>: <span class="st">dpage/pgadmin4:8</span>
+    <span class="nm">profiles</span>: [<span class="st">"tools"</span>]
+    <span class="nm">container_name</span>: <span class="st">ecommerce_pgadmin</span>
+    <span class="nm">environment</span>:
+      PGADMIN_DEFAULT_EMAIL:    <span class="st">admin@local.dev</span>
+      PGADMIN_DEFAULT_PASSWORD: <span class="st">admin</span>
+    <span class="nm">ports</span>:
+      - <span class="st">"5050:80"</span>
+    <span class="nm">depends_on</span>:
+      <span class="nm">postgres</span>: { <span class="nm">condition</span>: <span class="st">service_healthy</span> }
+
+<span class="nm">volumes</span>:
+  <span class="nm">postgres_data</span>:
+    <span class="nm">driver</span>: <span class="st">local</span></pre>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 3. DDL CATEGORIES ── -->
+    <section class="section" id="ddl-categories">
+      <div class="section-eyebrow">Artefato 3a — Migration V001</div>
+      <h2 class="section-title">DDL — Tabela <code>categories</code></h2>
+      <p>Implementa o padrão <strong>Adjacency List</strong>: cada linha conhece seu pai via <code>parent_id</code>. Simples de escrever e manter; navegação de árvore completa é feita com <code>WITH RECURSIVE</code>. A flag <code>is_leaf</code> evita a recursão para nós-folha na maioria das queries de leitura.</p>
+
+      <div class="callout">
+        <strong>Por que Adjacency List e não Nested Sets ou Closure Table?</strong> Com Jitterbit fazendo inserções em batch, a simplicidade de DML do Adjacency List supera os benefícios de leitura das outras abordagens. A <code>WITH RECURSIVE</code> performa bem até ~10.000 categorias no PostgreSQL — escala suficiente para a maioria dos marketplaces verticais.
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">db/migrations/V001__create_categories.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- V001: Tabela de categorias (Adjacency List)
+-- Suporta árvore de profundidade arbitrária.
+-- ============================================================</span>
+
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="ty">categories</span> (
+    <span class="cm">-- PK auto-incremental (UUID seria alternativa para UUIDs externos do Jitterbit)</span>
+    id              <span class="kw">BIGINT</span> <span class="kw">GENERATED ALWAYS AS IDENTITY PRIMARY KEY</span>,
+
+    <span class="cm">-- Nome da categoria, único dentro do mesmo nível pai</span>
+    name            <span class="kw">VARCHAR</span>(120) <span class="kw">NOT NULL</span>,
+
+    <span class="cm">-- NULL indica nó raiz (Departamento de 1º nível)</span>
+    parent_id       <span class="kw">BIGINT</span> <span class="kw">REFERENCES</span> <span class="ty">categories</span>(id) <span class="kw">ON DELETE RESTRICT</span>,
+
+    <span class="cm">-- TRUE quando não possui filhos; atualizado via trigger ou app</span>
+    is_leaf         <span class="kw">BOOLEAN NOT NULL DEFAULT FALSE</span>,
+
+    <span class="cm">-- Slug para URL/SEO: "lavadoras-de-alta-pressao"</span>
+    slug            <span class="kw">VARCHAR</span>(150) <span class="kw">NOT NULL</span>,
+
+    <span class="cm">-- Metadados de auditoria</span>
+    created_at      <span class="kw">TIMESTAMPTZ NOT NULL DEFAULT NOW</span>(),
+    updated_at      <span class="kw">TIMESTAMPTZ NOT NULL DEFAULT NOW</span>()
+);
+
+<span class="cm">-- Unicidade: mesmo nome não pode aparecer duas vezes no mesmo nível</span>
+<span class="kw">CREATE UNIQUE INDEX</span> uq_categories_parent_name
+    <span class="kw">ON</span> <span class="ty">categories</span> (
+        <span class="kw">COALESCE</span>(parent_id, -1),  <span class="cm">-- -1 representa "sem pai" (raiz)</span>
+        name
+    );
+
+<span class="cm">-- Índice de navegação: busca filhos de um nó (usado em browse)</span>
+<span class="kw">CREATE INDEX</span> idx_categories_parent_id <span class="kw">ON</span> <span class="ty">categories</span> (parent_id);
+
+<span class="cm">-- Índice para lookup por slug (rota /categoria/automotivo/acessorios)</span>
+<span class="kw">CREATE UNIQUE INDEX</span> uq_categories_slug <span class="kw">ON</span> <span class="ty">categories</span> (slug);
+
+<span class="cm">-- Trigger: atualiza updated_at automaticamente</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="nm">fn_set_updated_at</span>()
+<span class="kw">RETURNS TRIGGER LANGUAGE</span> plpgsql <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+    <span class="kw">NEW</span>.updated_at = <span class="kw">NOW</span>();
+    <span class="kw">RETURN NEW</span>;
+<span class="kw">END</span>; $$;
+
+<span class="kw">CREATE TRIGGER</span> trg_categories_updated_at
+<span class="kw">BEFORE UPDATE ON</span> <span class="ty">categories</span>
+<span class="kw">FOR EACH ROW EXECUTE FUNCTION</span> fn_set_updated_at();</pre>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 4. DDL PRODUCTS ── -->
+    <section class="section" id="ddl-products">
+      <div class="section-eyebrow">Artefato 3b — Migrations V002 e V003</div>
+      <h2 class="section-title">DDL — Produtos e Tabela Pivot</h2>
+      <p>O campo <code>primary_category_id</code> em <code>products</code> define o nó principal — aquele que determina regras fiscais e comissão. A tabela pivot <code>product_secondary_categories</code> mapeia os nós de descoberta (N:N).</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">db/migrations/V002__create_products.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- V002: Tabela de produtos
+-- primary_category_id: nó principal (regras, comissão, fiscal)
+-- ============================================================</span>
+
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="ty">products</span> (
+    id                   <span class="kw">BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY</span>,
+
+    <span class="cm">-- Identificador externo do ERP/Jitterbit (para upsert idempotente)</span>
+    external_sku         <span class="kw">VARCHAR</span>(80) <span class="kw">UNIQUE</span>,
+
+    title                <span class="kw">VARCHAR</span>(255) <span class="kw">NOT NULL</span>,
+    description          <span class="kw">TEXT</span>,
+
+    <span class="cm">-- Nó principal: define regras fiscais, comissão e reporting</span>
+    primary_category_id  <span class="kw">BIGINT NOT NULL REFERENCES</span> <span class="ty">categories</span>(id)
+                         <span class="kw">ON DELETE RESTRICT</span>,
+
+    <span class="cm">-- Preço base em centavos (evita float arithmetic)</span>
+    price_cents          <span class="kw">INTEGER NOT NULL CHECK</span> (price_cents >= 0),
+    currency             <span class="kw">CHAR</span>(3) <span class="kw">NOT NULL DEFAULT</span> <span class="st">'BRL'</span>,
+
+    <span class="nm">status</span>               <span class="kw">VARCHAR</span>(20) <span class="kw">NOT NULL DEFAULT</span> <span class="st">'draft'</span>
+                         <span class="kw">CHECK</span> (<span class="nm">status</span> <span class="kw">IN</span> (<span class="st">'draft'</span>, <span class="st">'active'</span>, <span class="st">'paused'</span>, <span class="st">'deleted'</span>)),
+
+    created_at           <span class="kw">TIMESTAMPTZ NOT NULL DEFAULT NOW</span>(),
+    updated_at           <span class="kw">TIMESTAMPTZ NOT NULL DEFAULT NOW</span>()
+);
+
+<span class="kw">CREATE INDEX</span> idx_products_primary_category
+    <span class="kw">ON</span> <span class="ty">products</span> (primary_category_id);
+
+<span class="kw">CREATE INDEX</span> idx_products_status
+    <span class="kw">ON</span> <span class="ty">products</span> (<span class="nm">status</span>)
+    <span class="kw">WHERE</span> <span class="nm">status</span> = <span class="st">'active'</span>;  <span class="cm">-- índice parcial: só produtos ativos</span>
+
+<span class="kw">CREATE TRIGGER</span> trg_products_updated_at
+<span class="kw">BEFORE UPDATE ON</span> <span class="ty">products</span>
+<span class="kw">FOR EACH ROW EXECUTE FUNCTION</span> fn_set_updated_at();</pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">db/migrations/V003__create_pivot_table.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- V003: Pivot N:N — categorias secundárias (descoberta/SEO)
+-- Um produto pode aparecer em múltiplos nós de navegação.
+-- ============================================================</span>
+
+<span class="kw">CREATE TABLE IF NOT EXISTS</span> <span class="ty">product_secondary_categories</span> (
+    product_id   <span class="kw">BIGINT NOT NULL REFERENCES</span> <span class="ty">products</span>(id)    <span class="kw">ON DELETE CASCADE</span>,
+    category_id  <span class="kw">BIGINT NOT NULL REFERENCES</span> <span class="ty">categories</span>(id) <span class="kw">ON DELETE RESTRICT</span>,
+
+    <span class="cm">-- Quando esta associação foi criada (rastreabilidade Jitterbit vs Dashboard)</span>
+    created_at   <span class="kw">TIMESTAMPTZ NOT NULL DEFAULT NOW</span>(),
+
+    <span class="kw">PRIMARY KEY</span> (product_id, category_id)
+);
+
+<span class="cm">-- Índice reverso: dado uma categoria, quais produtos ela contém</span>
+<span class="kw">CREATE INDEX</span> idx_psc_category_id
+    <span class="kw">ON</span> <span class="ty">product_secondary_categories</span> (category_id);
+
+<span class="cm">-- Regra: nó secundário não pode ser o mesmo que o nó principal</span>
+<span class="kw">ALTER TABLE</span> <span class="ty">product_secondary_categories</span>
+<span class="kw">ADD CONSTRAINT</span> chk_no_duplicate_primary
+<span class="kw">CHECK</span> (
+    category_id <span class="kw">NOT IN</span> (
+        <span class="kw">SELECT</span> primary_category_id <span class="kw">FROM</span> <span class="ty">products</span>
+        <span class="kw">WHERE</span> id = product_id
+    )
+);</pre>
+      </div>
+
+      <div class="warn-box">
+        <strong>Atenção — constraint de performance:</strong> A <code>CHECK</code> com subquery em V003 é avaliada a cada INSERT. Em volumes acima de 10k inserções/batch via Jitterbit, considere substituí-la por uma trigger <code>BEFORE INSERT</code> ou mover a validação para a camada de serviço.
+      </div>
+
+      <!-- Schema summary table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tabela</th>
+              <th>Coluna-chave</th>
+              <th>Tipo</th>
+              <th>Propósito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>categories</code></td><td><code>parent_id</code></td><td>BIGINT FK self</td><td>Adjacency List para árvore de profundidade N</td></tr>
+            <tr><td><code>categories</code></td><td><code>is_leaf</code></td><td>BOOLEAN</td><td>Otimização: evita recursão em nós-folha</td></tr>
+            <tr><td><code>products</code></td><td><code>primary_category_id</code></td><td>BIGINT FK</td><td>Nó principal — regras, comissão, NF-e</td></tr>
+            <tr><td><code>products</code></td><td><code>external_sku</code></td><td>VARCHAR UNIQUE</td><td>Chave de upsert para batch Jitterbit</td></tr>
+            <tr><td><code>product_secondary_categories</code></td><td><code>(product_id, category_id)</code></td><td>PK composta</td><td>Nós de descoberta e SEO (N:N)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 5. SEED ── -->
+    <section class="section" id="seed">
+      <div class="section-eyebrow">Artefato 3c — Seed Data</div>
+      <h2 class="section-title">DML — Árvore de 4 Níveis + Produto</h2>
+      <p>Dois departamentos de exemplo: <strong>Casa e Jardim</strong> e <strong>Automotivo</strong>. Cada um desce até o nó-folha. O produto "Lavadora de Alta Pressão" é associado ao seu nó principal e a um nó secundário em Automotivo.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">db/seeds/S001__categories_tree.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- S001: Árvore de categorias — 4 níveis
+-- Nível 1: Departamento  | Nível 2: Categoria
+-- Nível 3: Subcategoria  | Nível 4: Nó Folha (is_leaf = TRUE)
+-- ============================================================</span>
+
+<span class="cm">-- Nível 1: Departamentos (raiz, parent_id = NULL)</span>
+<span class="kw">INSERT INTO</span> <span class="ty">categories</span> (name, parent_id, is_leaf, slug) <span class="kw">VALUES</span>
+    (<span class="st">'Casa e Jardim'</span>,  <span class="kw">NULL</span>, <span class="kw">FALSE</span>, <span class="st">'casa-e-jardim'</span>),   <span class="cm">-- id = 1</span>
+    (<span class="st">'Automotivo'</span>,     <span class="kw">NULL</span>, <span class="kw">FALSE</span>, <span class="st">'automotivo'</span>);      <span class="cm">-- id = 2</span>
+
+<span class="cm">-- Nível 2: Categorias</span>
+<span class="kw">INSERT INTO</span> <span class="ty">categories</span> (name, parent_id, is_leaf, slug) <span class="kw">VALUES</span>
+    (<span class="st">'Limpeza e Organização'</span>, 1, <span class="kw">FALSE</span>, <span class="st">'limpeza-e-organizacao'</span>),  <span class="cm">-- id = 3</span>
+    (<span class="st">'Jardim e Área Externa'</span>, 1, <span class="kw">FALSE</span>, <span class="st">'jardim-e-area-externa'</span>),  <span class="cm">-- id = 4</span>
+    (<span class="st">'Cuidado do Veículo'</span>,    2, <span class="kw">FALSE</span>, <span class="st">'cuidado-do-veiculo'</span>),    <span class="cm">-- id = 5</span>
+    (<span class="st">'Acessórios Externos'</span>,   2, <span class="kw">FALSE</span>, <span class="st">'acessorios-externos'</span>);   <span class="cm">-- id = 6</span>
+
+<span class="cm">-- Nível 3: Subcategorias</span>
+<span class="kw">INSERT INTO</span> <span class="ty">categories</span> (name, parent_id, is_leaf, slug) <span class="kw">VALUES</span>
+    (<span class="st">'Lavadoras e Aspiradores'</span>, 3, <span class="kw">FALSE</span>, <span class="st">'lavadoras-e-aspiradores'</span>),   <span class="cm">-- id = 7</span>
+    (<span class="st">'Vassouras e Rodos'</span>,       3, <span class="kw">FALSE</span>, <span class="st">'vassouras-e-rodos'</span>),         <span class="cm">-- id = 8</span>
+    (<span class="st">'Mangueiras e Irrigação'</span>,  4, <span class="kw">FALSE</span>, <span class="st">'mangueiras-e-irrigacao'</span>),    <span class="cm">-- id = 9</span>
+    (<span class="st">'Lavagem de Veículos'</span>,     5, <span class="kw">FALSE</span>, <span class="st">'lavagem-de-veiculos'</span>),       <span class="cm">-- id = 10</span>
+    (<span class="st">'Capas e Proteção'</span>,        6, <span class="kw">FALSE</span>, <span class="st">'capas-e-protecao'</span>);          <span class="cm">-- id = 11</span>
+
+<span class="cm">-- Nível 4: Nós Folha (is_leaf = TRUE — sem filhos)</span>
+<span class="kw">INSERT INTO</span> <span class="ty">categories</span> (name, parent_id, is_leaf, slug) <span class="kw">VALUES</span>
+    (<span class="st">'Lavadoras de Alta Pressão'</span>, 7,  <span class="kw">TRUE</span>,  <span class="st">'lavadoras-de-alta-pressao'</span>),   <span class="cm">-- id = 12 ← nó principal do produto</span>
+    (<span class="st">'Aspiradores de Pó'</span>,         7,  <span class="kw">TRUE</span>,  <span class="st">'aspiradores-de-po'</span>),            <span class="cm">-- id = 13</span>
+    (<span class="st">'Mangueiras Retráteis'</span>,      9,  <span class="kw">TRUE</span>,  <span class="st">'mangueiras-retrateis'</span>),         <span class="cm">-- id = 14</span>
+    (<span class="st">'Kits de Lavagem Premium'</span>,   10, <span class="kw">TRUE</span>,  <span class="st">'kits-de-lavagem-premium'</span>),      <span class="cm">-- id = 15 ← nó secundário do produto</span>
+    (<span class="st">'Cobertores de Carro'</span>,       11, <span class="kw">TRUE</span>,  <span class="st">'cobertores-de-carro'</span>);          <span class="cm">-- id = 16</span></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">db/seeds/S002__sample_products.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- S002: Produto de exemplo com categorização dupla
+-- Nó Principal (id=12): Lavadoras de Alta Pressão
+--   → define NCM, comissão marketplace e regra de shipping
+-- Nó Secundário (id=15): Kits de Lavagem Premium (Automotivo)
+--   → permite descoberta em browse e SEO cross-departamento
+-- ============================================================</span>
+
+<span class="kw">INSERT INTO</span> <span class="ty">products</span>
+    (external_sku, title, description, primary_category_id, price_cents, <span class="nm">status</span>)
+<span class="kw">VALUES</span> (
+    <span class="st">'SKU-LAP-2000'</span>,
+    <span class="st">'Lavadora de Alta Pressão 2000W com Mangueira 5m'</span>,
+    <span class="st">'Potência de 2000W, pressão de 120 bar, bomba de indução,
+    ideal para lavagem de carros, calçadas e áreas externas.'</span>,
+    12,         <span class="cm">-- primary_category_id → "Lavadoras de Alta Pressão"</span>
+    89900,      <span class="cm">-- R$ 899,00 em centavos</span>
+    <span class="st">'active'</span>
+)
+<span class="kw">RETURNING</span> id;  <span class="cm">-- retorna id=1 (assumindo BD limpo)</span>
+
+<span class="cm">-- Nó de descoberta: produto aparece também em Automotivo > Lavagem de Veículos > Kits Premium</span>
+<span class="kw">INSERT INTO</span> <span class="ty">product_secondary_categories</span> (product_id, category_id)
+<span class="kw">VALUES</span> (1, 15);  <span class="cm">-- produto 1 aparece em "Kits de Lavagem Premium"</span></pre>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 6. QUERY RECURSIVA ── -->
+    <section class="section" id="query">
+      <div class="section-eyebrow">Artefato 4</div>
+      <h2 class="section-title">Query Recursiva — Breadcrumbs Completos</h2>
+      <p>A <code>WITH RECURSIVE</code> percorre o Adjacency List de filho para raiz, acumulando os nomes. O resultado final inclui o caminho da categoria principal e todos os caminhos secundários do produto.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">breadcrumbs_by_product.sql</span>
+          <span class="code-lang">SQL</span>
+        </div>
+        <pre><span class="cm">-- ============================================================
+-- Retorna todos os breadcrumbs de um produto (principal + secundários)
+-- Parâmetro: :product_id = 1 (Lavadora de Alta Pressão)
+-- ============================================================</span>
+
+<span class="kw">WITH RECURSIVE</span>
+
+<span class="cm">-- CTE 1: sobe a árvore para qualquer categoria inicial</span>
+category_path (
+    start_category_id,  <span class="cm">-- mantém o ponto de entrada da recursão</span>
+    id,
+    name,
+    parent_id,
+    depth,
+    path_text           <span class="cm">-- breadcrumb acumulado (raiz > ... > folha)</span>
+) <span class="kw">AS</span> (
+    <span class="cm">-- Caso base: começa no nó-folha</span>
+    <span class="kw">SELECT</span>
+        c.id                <span class="kw">AS</span> start_category_id,
+        c.id,
+        c.name,
+        c.parent_id,
+        0                   <span class="kw">AS</span> depth,
+        c.name::TEXT        <span class="kw">AS</span> path_text
+    <span class="kw">FROM</span> <span class="ty">categories</span> c
+    <span class="kw">WHERE</span> c.id <span class="kw">IN</span> (
+        <span class="cm">-- Nó principal do produto</span>
+        <span class="kw">SELECT</span> primary_category_id <span class="kw">FROM</span> <span class="ty">products</span> <span class="kw">WHERE</span> id = :product_id
+        <span class="kw">UNION ALL</span>
+        <span class="cm">-- Nós secundários</span>
+        <span class="kw">SELECT</span> category_id <span class="kw">FROM</span> <span class="ty">product_secondary_categories</span>
+        <span class="kw">WHERE</span> product_id = :product_id
+    )
+
+    <span class="kw">UNION ALL</span>
+
+    <span class="cm">-- Caso recursivo: sobe para o nó pai</span>
+    <span class="kw">SELECT</span>
+        cp.start_category_id,
+        parent.id,
+        parent.name,
+        parent.parent_id,
+        cp.depth + 1,
+        parent.name || <span class="st">' > '</span> || cp.path_text  <span class="cm">-- constrói "Raiz > ... > Folha"</span>
+    <span class="kw">FROM</span> <span class="ty">categories</span> parent
+    <span class="kw">JOIN</span> category_path cp <span class="kw">ON</span> cp.parent_id = parent.id
+),
+
+<span class="cm">-- CTE 2: pega apenas a linha mais alta (raiz) de cada caminho</span>
+final_paths <span class="kw">AS</span> (
+    <span class="kw">SELECT DISTINCT ON</span> (start_category_id)
+        start_category_id,
+        path_text,
+        depth <span class="kw">AS</span> total_levels
+    <span class="kw">FROM</span> category_path
+    <span class="kw">ORDER BY</span> start_category_id, depth <span class="kw">DESC</span>  <span class="cm">-- profundidade máxima = caminho completo</span>
+)
+
+<span class="cm">-- Resultado final: junta com informação de tipo do nó</span>
+<span class="kw">SELECT</span>
+    p.id                                        <span class="kw">AS</span> product_id,
+    p.title                                     <span class="kw">AS</span> product_title,
+    <span class="kw">CASE WHEN</span> fp.start_category_id = p.primary_category_id
+         <span class="kw">THEN</span> <span class="st">'principal'</span>
+         <span class="kw">ELSE</span> <span class="st">'secundario'</span>
+    <span class="kw">END</span>                                         <span class="kw">AS</span> category_type,
+    fp.start_category_id                        <span class="kw">AS</span> leaf_category_id,
+    fp.path_text                                <span class="kw">AS</span> breadcrumb,
+    fp.total_levels
+<span class="kw">FROM</span> <span class="ty">products</span> p
+<span class="kw">CROSS JOIN</span> final_paths fp
+<span class="kw">WHERE</span> p.id = :product_id
+<span class="kw">ORDER BY</span> category_type <span class="kw">DESC</span>, fp.start_category_id;</pre>
+      </div>
+
+      <p><strong>Resultado esperado</strong> para <code>:product_id = 1</code>:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>product_title</th>
+              <th>category_type</th>
+              <th>breadcrumb</th>
+              <th>total_levels</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lavadora de Alta Pressão 2000W…</td>
+              <td><code>principal</code></td>
+              <td>Casa e Jardim &gt; Limpeza e Organização &gt; Lavadoras e Aspiradores &gt; Lavadoras de Alta Pressão</td>
+              <td style="font-variant-numeric:tabular-nums">3</td>
+            </tr>
+            <tr>
+              <td>Lavadora de Alta Pressão 2000W…</td>
+              <td><code>secundario</code></td>
+              <td>Automotivo &gt; Cuidado do Veículo &gt; Lavagem de Veículos &gt; Kits de Lavagem Premium</td>
+              <td style="font-variant-numeric:tabular-nums">3</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 7. LÓGICA DE NEGÓCIO ── -->
+    <section class="section" id="logica">
+      <div class="section-eyebrow">Artefato 5a</div>
+      <h2 class="section-title">Lógica de Negócio — Nó Principal vs. Nós Secundários</h2>
+
+      <p>A separação entre nó principal e nós de descoberta não é apenas técnica — ela reflete responsabilidades de negócio distintas que precisam ser preservadas independentemente de como o produto chega ao sistema.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimensão</th>
+              <th>Nó Principal (<code>primary_category_id</code>)</th>
+              <th>Nós Secundários (<code>product_secondary_categories</code>)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cardinalidade</strong></td>
+              <td>Exatamente 1 por produto</td>
+              <td>0 a N por produto</td>
+            </tr>
+            <tr>
+              <td><strong>Comissão</strong></td>
+              <td>Define a taxa de comissão do marketplace (ex: Limpeza = 12%)</td>
+              <td>Não afeta comissão</td>
+            </tr>
+            <tr>
+              <td><strong>Fiscal / NCM</strong></td>
+              <td>Mapeado para código NCM na NF-e do seller</td>
+              <td>Ignorado no fiscal</td>
+            </tr>
+            <tr>
+              <td><strong>Regras de conteúdo</strong></td>
+              <td>Determina campos obrigatórios (ex: tensão em Eletro)</td>
+              <td>Não impõe validações</td>
+            </tr>
+            <tr>
+              <td><strong>SEO / Browse</strong></td>
+              <td>URL canônica: <code>/lavadoras-de-alta-pressao/produto-x</code></td>
+              <td>URLs alternativas e listagens cruzadas</td>
+            </tr>
+            <tr>
+              <td><strong>Relatórios de GMV</strong></td>
+              <td>Atribuição de receita ao departamento principal</td>
+              <td>Não aparece em relatórios de GMV</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <strong>Regra de negócio crítica:</strong> um produto jamais pode ter o mesmo nó como principal e secundário simultaneamente. A constraint <code>chk_no_duplicate_primary</code> em V003 e a validação na camada de serviço garantem essa integridade em dois níveis independentes.
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 8. FLUXOS ── -->
+    <section class="section" id="fluxos">
+      <div class="section-eyebrow">Artefato 5b</div>
+      <h2 class="section-title">Fluxos de Integração</h2>
+
+      <p><strong>Fluxo Jitterbit (Batch):</strong> o adaptador recebe um payload JSON do ERP, normaliza o campo de categoria e executa um <code>INSERT … ON CONFLICT (external_sku) DO UPDATE</code> — garantindo idempotência. O nó principal vem mapeado do campo <code>category_code</code> do ERP; os nós secundários chegam como array <code>discovery_categories[]</code> e são inseridos em batch na pivot.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">api/integrations/jitterbitAdapter.js — lógica de upsert</span>
+          <span class="code-lang">JavaScript</span>
+        </div>
+        <pre><span class="cm">// Recebe payload do Jitterbit e faz upsert idempotente</span>
+<span class="kw">async function</span> <span class="nm">upsertProductFromBatch</span>(payload, db) {
+  <span class="kw">const</span> { external_sku, category_code, discovery_categories, ...fields } = payload;
+
+  <span class="cm">// Resolve category_code do ERP → id interno</span>
+  <span class="kw">const</span> primaryId = <span class="kw">await</span> db.one(
+    <span class="st">'SELECT id FROM categories WHERE slug = $1 AND is_leaf = TRUE'</span>,
+    [category_code]
+  );
+
+  <span class="cm">// Upsert principal — ON CONFLICT garante idempotência</span>
+  <span class="kw">const</span> product = <span class="kw">await</span> db.one(
+    <span class="st">`INSERT INTO products (external_sku, primary_category_id, ...)
+     VALUES ($1, $2, ...)
+     ON CONFLICT (external_sku) DO UPDATE
+       SET primary_category_id = EXCLUDED.primary_category_id,
+           updated_at = NOW()
+     RETURNING id`</span>,
+    [external_sku, primaryId.id, <span class="cm">/*...*/</span>]
+  );
+
+  <span class="cm">// Substitui nós secundários em bloco (delete + insert)</span>
+  <span class="kw">await</span> db.tx(<span class="kw">async</span> t => {
+    <span class="kw">await</span> t.none(
+      <span class="st">'DELETE FROM product_secondary_categories WHERE product_id = $1'</span>,
+      [product.id]
+    );
+    <span class="kw">if</span> (discovery_categories?.length) {
+      <span class="kw">const</span> rows = discovery_categories.map(slug => ({ product_id: product.id, slug }));
+      <span class="cm">// pg-promise helpers para INSERT em batch</span>
+      <span class="kw">await</span> t.none(db.$helpers.insert(rows, [<span class="st">'product_id'</span>, <span class="st">'category_id'</span>],
+        <span class="st">'product_secondary_categories'</span>));
+    }
+  });
+}</pre>
+      </div>
+
+      <p><strong>Fluxo Dashboard do Vendedor:</strong> a API expõe um endpoint <code>PATCH /products/:id/categories</code> que aceita <code>primary_category_id</code> e <code>secondary_category_ids[]</code>. A validação de negócio (nó não pode ser principal e secundário ao mesmo tempo; nó principal deve ser <code>is_leaf = TRUE</code>) é feita na camada de serviço <em>antes</em> do SQL, devolvendo erros 422 com descrição legível para o frontend do Dashboard.</p>
+
+      <div class="callout">
+        <strong>Regra de acesso por fluxo:</strong> o Jitterbit usa uma role PostgreSQL <code>role_jitterbit</code> com permissão <code>INSERT, UPDATE</code> apenas em <code>products</code> e <code>product_secondary_categories</code>. O Dashboard usa <code>role_api</code> com as mesmas permissões mais <code>SELECT</code> em <code>categories</code>. Nunca ambos usam o superusuário.
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── 9. COMO RODAR ── -->
+    <section class="section" id="como-rodar">
+      <div class="section-eyebrow">Artefato 5c</div>
+      <h2 class="section-title">Como Rodar</h2>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-label">Terminal — setup completo</span>
+          <span class="code-lang">BASH</span>
+        </div>
+        <pre><span class="cm"># 1. Clone e configure variáveis de ambiente</span>
+cp .env.example .env
+<span class="cm"># Edite .env com suas credenciais desejadas</span>
+
+<span class="cm"># 2. Suba o PostgreSQL</span>
+docker compose -f infra/docker-compose.yml up -d postgres
+
+<span class="cm"># 3. Aguarde o healthcheck ficar healthy (~10s)</span>
+docker compose -f infra/docker-compose.yml ps
+
+<span class="cm"># 4. Aplique as migrations em ordem</span>
+psql $DATABASE_URL -f db/migrations/V001__create_categories.sql
+psql $DATABASE_URL -f db/migrations/V002__create_products.sql
+psql $DATABASE_URL -f db/migrations/V003__create_pivot_table.sql
+
+<span class="cm"># 5. Popule com dados de exemplo</span>
+psql $DATABASE_URL -f db/seeds/S001__categories_tree.sql
+psql $DATABASE_URL -f db/seeds/S002__sample_products.sql
+
+<span class="cm"># 6. (Opcional) Abra o pgAdmin em http://localhost:5050</span>
+docker compose -f infra/docker-compose.yml --profile tools up -d pgadmin
+
+<span class="cm"># 7. Teste a query de breadcrumbs</span>
+psql $DATABASE_URL -v product_id=1 -f breadcrumbs_by_product.sql</pre>
+      </div>
+
+      <div class="callout">
+        <strong>Com Flyway (recomendado para CI/CD):</strong> renomeie os arquivos de migration para o padrão <code>V1__desc.sql</code>, <code>V2__desc.sql</code> e execute <code>flyway -url=jdbc:postgresql://... migrate</code>. O Flyway registra cada migration aplicada na tabela <code>flyway_schema_history</code> e impede re-execução.
+      </div>
+
+      <div class="warn-box">
+        <strong>Nunca execute os seeds em produção.</strong> Os arquivos <code>S0xx__*.sql</code> são exclusivos para ambientes de desenvolvimento e staging. Em produção, os dados vêm via Jitterbit ou do Dashboard do Vendedor.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// Highlight active nav link on scroll
+const sections = document.querySelectorAll('.section[id]');
+const navLinks = document.querySelectorAll('.nav-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+      if (active) active.classList.add('active');
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
